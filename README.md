@@ -13,6 +13,15 @@
 
 SluiceOps lets you add services, switch routes and servers on and off, watch the live status and edit the configuration of an existing HAProxy from the browser. It is free software (AGPL-3.0), has no paid tier and no feature gates.
 
+> [!WARNING]
+> **Early version (0.x).** SluiceOps is new and has so far only been tested on a few setups. Before you let it manage a production HAProxy:
+>
+> - try it with a copy of your configuration first, or start it with `-read-only` and look around,
+> - check the diff in the review dialog before every change,
+> - keep your own backup of `haproxy.cfg` (SluiceOps keeps a history, but do not rely on it alone).
+>
+> Bug reports and feedback are very welcome — please [open an issue](https://github.com/toolvibes/sluiceops/issues).
+
 ## Why another HAProxy UI?
 
 Most tools parse `haproxy.cfg` into a data model and write a freshly generated file back. Comments move to the top of their section or disappear, sections get reordered, `inter 5s` becomes `inter 5000`. For a configuration that is documented and maintained by hand, that is not acceptable.
@@ -30,6 +39,7 @@ SluiceOps works differently:
 - Services overview: every backend with the hosts/paths that route to it, servers with live health status, enable/disable switches
 - New-service wizard (API, web UI, WebSocket, TCP presets): backend, servers, health check and host/path route in one change
 - Routing view per frontend in the exact rule order (first match wins), add/edit/disable/delete routes, default backend
+- Live statistics per frontend, backend and server: requests/s with history, sessions, HTTP response classes, errors, response times, traffic
 - Server management: add, edit, maintenance, drain, delete
 - Backend settings: mode, balance algorithm, health check, timeouts; raw editing of single sections
 - Full config editor with validation and error line markers

@@ -95,13 +95,22 @@ func (r *Runtime) Exec(cmd string) (string, error) {
 
 // Info is a subset of "show info".
 type Info struct {
-	Version   string `json:"version"`
-	Uptime    string `json:"uptime"`
-	UptimeSec int64  `json:"uptimeSec"`
-	Pid       string `json:"pid"`
-	CurrConns string `json:"currConns"`
-	MaxConn   string `json:"maxConn"`
-	NodeName  string `json:"node"`
+	Version     string `json:"version"`
+	Uptime      string `json:"uptime"`
+	UptimeSec   int64  `json:"uptimeSec"`
+	Pid         string `json:"pid"`
+	CurrConns   string `json:"currConns"`
+	MaxConn     string `json:"maxConn"`
+	NodeName    string `json:"node"`
+	Threads     int64  `json:"threads"`
+	CumConns    int64  `json:"cumConns"`
+	CumReq      int64  `json:"cumReq"`
+	ConnRate    int64  `json:"connRate"`
+	MaxConnRate int64  `json:"maxConnRate"`
+	SessRate    int64  `json:"sessRate"`
+	MaxSessRate int64  `json:"maxSessRate"`
+	IdlePct     int64  `json:"idlePct"`
+	RunQueue    int64  `json:"runQueue"`
 }
 
 // ShowInfo returns basic process information.
@@ -122,29 +131,77 @@ func (r *Runtime) ShowInfo() (*Info, error) {
 		return nil, fmt.Errorf("unexpected answer from runtime API: %s", firstLine(out))
 	}
 	up, _ := strconv.ParseInt(kv["Uptime_sec"], 10, 64)
+	n := func(k string) int64 {
+		v, _ := strconv.ParseInt(kv[k], 10, 64)
+		return v
+	}
 	return &Info{Version: kv["Version"], Uptime: kv["Uptime"], UptimeSec: up, Pid: kv["Pid"],
-		CurrConns: kv["CurrConns"], MaxConn: kv["Maxconn"], NodeName: kv["node"]}, nil
+		CurrConns: kv["CurrConns"], MaxConn: kv["Maxconn"], NodeName: kv["node"],
+		Threads: n("Nbthread"), CumConns: n("CumConns"), CumReq: n("CumReq"),
+		ConnRate: n("ConnRate"), MaxConnRate: n("MaxConnRate"), SessRate: n("SessRate"),
+		MaxSessRate: n("MaxSessRate"), IdlePct: n("Idle_pct"), RunQueue: n("Run_queue")}, nil
 }
 
-// Stat is one row of "show stat".
+// Stat is one row of "show stat". Counters are cumulative since the last
+// (re)start of the worker, rates are per second over the last second, times
+// are averages in milliseconds over the last 1024 requests.
 type Stat struct {
 	Proxy      string `json:"proxy"`
 	Name       string `json:"name"` // FRONTEND, BACKEND or the server name
 	Type       string `json:"type"` // frontend, backend, server, listener
 	Status     string `json:"status"`
+	Mode       string `json:"mode,omitempty"`
+	Algo       string `json:"algo,omitempty"`
 	CheckState string `json:"checkStatus,omitempty"`
 	CheckDesc  string `json:"checkDesc,omitempty"`
+	CheckCode  int64  `json:"checkCode,omitempty"`
+	CheckTime  int64  `json:"checkDuration,omitempty"`
 	LastChange int64  `json:"lastChange"`
-	Sessions   int64  `json:"sessions"`
-	Rate       int64  `json:"rate"`
-	Total      int64  `json:"total"`
-	BytesIn    int64  `json:"bytesIn"`
-	BytesOut   int64  `json:"bytesOut"`
+	LastSess   int64  `json:"lastSess"` // seconds since last session, -1 = never
+	Downtime   int64  `json:"downtime"`
+	ChkFail    int64  `json:"chkFail"`
+	ChkDown    int64  `json:"chkDown"`
+	Addr       string `json:"addr,omitempty"`
 	Weight     int64  `json:"weight"`
-	Errors5xx  int64  `json:"http5xx"`
 	Active     int64  `json:"active"`
 	Backup     int64  `json:"backup"`
-	Addr       string `json:"addr,omitempty"`
+
+	Queue        int64 `json:"queue"`
+	QueueMax     int64 `json:"queueMax"`
+	Sessions     int64 `json:"sessions"` // currently open
+	SessionsMax  int64 `json:"sessionsMax"`
+	SessionLimit int64 `json:"sessionLimit"`
+	Total        int64 `json:"total"` // sessions since start
+	LbTotal      int64 `json:"lbTotal"`
+	Rate         int64 `json:"rate"` // sessions per second
+	RateMax      int64 `json:"rateMax"`
+	ReqRate      int64 `json:"reqRate"` // HTTP requests per second (frontends)
+	ReqRateMax   int64 `json:"reqRateMax"`
+	ReqTotal     int64 `json:"reqTotal"`
+	BytesIn      int64 `json:"bytesIn"`
+	BytesOut     int64 `json:"bytesOut"`
+
+	Http1xx   int64 `json:"http1xx"`
+	Http2xx   int64 `json:"http2xx"`
+	Http3xx   int64 `json:"http3xx"`
+	Http4xx   int64 `json:"http4xx"`
+	Errors5xx int64 `json:"http5xx"`
+	HttpOther int64 `json:"httpOther"`
+
+	DeniedReq  int64 `json:"deniedReq"`
+	DeniedResp int64 `json:"deniedResp"`
+	ErrReq     int64 `json:"errReq"`
+	ErrConn    int64 `json:"errConn"`
+	ErrResp    int64 `json:"errResp"`
+	Retries    int64 `json:"retries"`
+	Redispatch int64 `json:"redispatch"`
+	CliAbort   int64 `json:"cliAbort"`
+	SrvAbort   int64 `json:"srvAbort"`
+
+	QTime int64 `json:"qtime"`
+	CTime int64 `json:"ctime"`
+	RTime int64 `json:"rtime"`
+	TTime int64 `json:"ttime"`
 }
 
 // ShowStat returns statistics for all proxies and servers.
@@ -196,11 +253,23 @@ func ParseStatCSV(out string) ([]Stat, error) {
 		}
 		stats = append(stats, Stat{
 			Proxy: get(row, "pxname"), Name: get(row, "svname"), Type: types[get(row, "type")],
-			Status: get(row, "status"), CheckState: get(row, "check_status"), CheckDesc: get(row, "check_desc"),
-			LastChange: num(row, "lastchg"), Sessions: num(row, "scur"), Rate: num(row, "rate"),
-			Total: num(row, "stot"), BytesIn: num(row, "bin"), BytesOut: num(row, "bout"),
-			Weight: num(row, "weight"), Errors5xx: num(row, "hrsp_5xx"), Active: num(row, "act"),
-			Backup: num(row, "bck"), Addr: get(row, "addr"),
+			Status: get(row, "status"), Mode: get(row, "mode"), Algo: get(row, "algo"),
+			CheckState: get(row, "check_status"), CheckDesc: get(row, "check_desc"),
+			CheckCode: num(row, "check_code"), CheckTime: num(row, "check_duration"),
+			LastChange: num(row, "lastchg"), LastSess: num(row, "lastsess"), Downtime: num(row, "downtime"),
+			ChkFail: num(row, "chkfail"), ChkDown: num(row, "chkdown"), Addr: get(row, "addr"),
+			Weight: num(row, "weight"), Active: num(row, "act"), Backup: num(row, "bck"),
+			Queue: num(row, "qcur"), QueueMax: num(row, "qmax"),
+			Sessions: num(row, "scur"), SessionsMax: num(row, "smax"), SessionLimit: num(row, "slim"),
+			Total: num(row, "stot"), LbTotal: num(row, "lbtot"), Rate: num(row, "rate"), RateMax: num(row, "rate_max"),
+			ReqRate: num(row, "req_rate"), ReqRateMax: num(row, "req_rate_max"), ReqTotal: num(row, "req_tot"),
+			BytesIn: num(row, "bin"), BytesOut: num(row, "bout"),
+			Http1xx: num(row, "hrsp_1xx"), Http2xx: num(row, "hrsp_2xx"), Http3xx: num(row, "hrsp_3xx"),
+			Http4xx: num(row, "hrsp_4xx"), Errors5xx: num(row, "hrsp_5xx"), HttpOther: num(row, "hrsp_other"),
+			DeniedReq: num(row, "dreq"), DeniedResp: num(row, "dresp"), ErrReq: num(row, "ereq"),
+			ErrConn: num(row, "econ"), ErrResp: num(row, "eresp"), Retries: num(row, "wretr"),
+			Redispatch: num(row, "wredis"), CliAbort: num(row, "cli_abrt"), SrvAbort: num(row, "srv_abrt"),
+			QTime: num(row, "qtime"), CTime: num(row, "ctime"), RTime: num(row, "rtime"), TTime: num(row, "ttime"),
 		})
 	}
 	return stats, nil

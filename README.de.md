@@ -13,6 +13,15 @@
 
 Mit SluiceOps fügst du Services hinzu, schaltest Routen und Server ein und aus, siehst den Live-Status und bearbeitest die Konfiguration eines bestehenden HAProxy im Browser. SluiceOps ist freie Software (AGPL-3.0), ohne Bezahlstufe und ohne gesperrte Funktionen.
 
+> [!WARNING]
+> **Frühe Version (0.x).** SluiceOps ist neu und bisher nur mit wenigen Setups getestet. Bevor du damit ein produktives HAProxy verwaltest:
+>
+> - probiere es zuerst mit einer Kopie deiner Konfiguration aus oder starte es mit `-read-only` und sieh dich um,
+> - prüfe vor jeder Änderung den Diff im Prüf-Dialog,
+> - behalte eine eigene Sicherung deiner `haproxy.cfg` (SluiceOps führt zwar einen Verlauf, verlass dich aber nicht allein darauf).
+>
+> Fehlerberichte und Rückmeldungen sind sehr willkommen – bitte [ein Issue anlegen](https://github.com/toolvibes/sluiceops/issues).
+
 ## Warum noch eine HAProxy-UI?
 
 Die meisten Tools lesen die `haproxy.cfg` in ein Datenmodell ein und schreiben eine neu erzeugte Datei zurück. Kommentare wandern an den Anfang ihres Abschnitts oder verschwinden, Abschnitte werden umsortiert, aus `inter 5s` wird `inter 5000`. Für eine von Hand gepflegte und dokumentierte Config ist das nicht akzeptabel.
@@ -30,6 +39,7 @@ SluiceOps arbeitet anders:
 - Service-Übersicht: jedes Backend mit den Hosts und Pfaden, die dorthin führen, Server mit Live-Healthcheck, Schalter zum Aktivieren und Deaktivieren
 - Assistent für neue Services (Vorlagen für API, Web-UI, WebSocket, TCP): Backend, Server, Healthcheck und Host/Pfad-Route in einer Änderung
 - Routing-Ansicht je Frontend in exakter Regel-Reihenfolge (erste passende Regel gewinnt): Routen anlegen, bearbeiten, deaktivieren, löschen, Default-Backend
+- Live-Statistik je Frontend, Backend und Server: Anfragen/s mit Verlauf, Sitzungen, HTTP-Antwortklassen, Fehler, Antwortzeiten, Traffic
 - Server-Verwaltung: hinzufügen, bearbeiten, Wartung, Drain, löschen
 - Backend-Einstellungen: Modus, Balancing, Healthcheck, Timeouts; einzelne Abschnitte als Text bearbeiten
 - Vollständiger Config-Editor mit Validierung und Markierung der Fehlerzeilen

@@ -27,6 +27,9 @@
   --diff-add-strong: #c6ebd2;
   --diff-del: #fbe9e8;
   --diff-del-strong: #f5cdca;
+  --chart-1: #00889e;
+  --chart-2: #c2302d;
+  --grid: #e3e8eb;
   --shadow: 0 1px 2px rgba(16, 32, 40, 0.06), 0 1px 1px rgba(16, 32, 40, 0.04);
   --shadow-lg: 0 12px 40px rgba(10, 25, 35, 0.22);
   --focus: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
@@ -67,6 +70,9 @@
     --diff-add-strong: #184026;
     --diff-del: #301615;
     --diff-del-strong: #4a201e;
+    --chart-1: #22a3ae;
+    --chart-2: #e8625e;
+    --grid: #243038;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
     --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
     color-scheme: dark;
@@ -100,6 +106,9 @@
   --diff-add-strong: #184026;
   --diff-del: #301615;
   --diff-del-strong: #4a201e;
+  --chart-1: #22a3ae;
+  --chart-2: #e8625e;
+  --grid: #243038;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
   color-scheme: dark;
@@ -2451,4 +2460,207 @@ tr.row-off td {
     flex-wrap: wrap;
     max-width: 112px;
   }
+}
+
+/* ----------------------------------------------------------------- stats */
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.card-head .card-title {
+  margin: 0;
+}
+
+select.select-sm {
+  width: auto;
+  min-height: 30px;
+  padding: 4px 8px;
+}
+
+.chart {
+  position: relative;
+}
+
+.chart-plot {
+  position: relative;
+}
+
+.chart svg {
+  display: block;
+  max-width: 100%;
+  touch-action: pan-y;
+}
+
+.chart svg:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+  border-radius: var(--radius-sm);
+}
+
+.chart-grid {
+  stroke: var(--grid);
+  stroke-width: 1;
+}
+
+.chart-baseline {
+  stroke: var(--border-strong);
+  stroke-width: 1;
+}
+
+.chart-axis {
+  fill: var(--muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-crosshair {
+  stroke: var(--muted);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+
+.chart-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chart-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex: none;
+}
+
+.chart-empty {
+  position: absolute;
+  inset: 0 0 24px 48px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  font-size: 13px;
+  padding: 0 16px;
+}
+
+.chart-tip {
+  position: absolute;
+  top: 4px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  padding: 6px 10px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 2;
+}
+
+.chart-tip-time {
+  margin-bottom: 2px;
+}
+
+.chart-tip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-tip-row strong {
+  min-width: 3ch;
+}
+
+.spark {
+  display: block;
+  flex: none;
+}
+
+.spark-empty {
+  display: inline-block;
+  width: 84px;
+  text-align: center;
+}
+
+.rate-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.rate-cell > span:last-child {
+  min-width: 3.5ch;
+}
+
+.codebar {
+  display: flex;
+  gap: 2px;
+  height: 8px;
+  min-width: 96px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.codebar > span {
+  min-width: 3px;
+}
+
+.codes-cell {
+  min-width: 110px;
+}
+
+.stats-card {
+  padding-bottom: 6px;
+}
+
+.stats-wrap {
+  overflow-x: auto;
+}
+
+.stats-table {
+  font-variant-numeric: tabular-nums;
+}
+
+.stats-table th[scope="row"] {
+  text-align: left;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.stats-table td,
+.stats-table th {
+  white-space: nowrap;
+}
+
+.stats-table tr.stats-total th,
+.stats-table tr.stats-total td {
+  background: var(--surface-2);
+  font-weight: 600;
+}
+
+a.tile-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+a.tile-link:hover {
+  border-color: var(--accent);
 }

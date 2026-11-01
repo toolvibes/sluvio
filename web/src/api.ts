@@ -249,26 +249,73 @@ export interface Info {
   currConns: string;
   maxConn: string;
   node: string;
+  threads: number;
+  cumConns: number;
+  cumReq: number;
+  connRate: number;
+  maxConnRate: number;
+  sessRate: number;
+  maxSessRate: number;
+  idlePct: number;
+  runQueue: number;
 }
 
+/** One row of HAProxy's "show stat". Counters are cumulative since the last
+ * (re)load, rates per second, times are averages in ms over the last 1024
+ * requests. */
 export interface Stat {
   proxy: string;
   name: string;
   type: string;
   status: string;
+  mode?: string;
+  algo?: string;
   checkStatus?: string;
   checkDesc?: string;
+  checkCode?: number;
+  checkDuration?: number;
   lastChange: number;
-  sessions: number;
-  rate: number;
-  total: number;
-  bytesIn: number;
-  bytesOut: number;
+  lastSess: number;
+  downtime: number;
+  chkFail: number;
+  chkDown: number;
+  addr?: string;
   weight: number;
-  http5xx: number;
   active: number;
   backup: number;
-  addr?: string;
+  queue: number;
+  queueMax: number;
+  sessions: number;
+  sessionsMax: number;
+  sessionLimit: number;
+  total: number;
+  lbTotal: number;
+  rate: number;
+  rateMax: number;
+  reqRate: number;
+  reqRateMax: number;
+  reqTotal: number;
+  bytesIn: number;
+  bytesOut: number;
+  http1xx: number;
+  http2xx: number;
+  http3xx: number;
+  http4xx: number;
+  http5xx: number;
+  httpOther: number;
+  deniedReq: number;
+  deniedResp: number;
+  errReq: number;
+  errConn: number;
+  errResp: number;
+  retries: number;
+  redispatch: number;
+  cliAbort: number;
+  srvAbort: number;
+  qtime: number;
+  ctime: number;
+  rtime: number;
+  ttime: number;
 }
 
 export interface Status {

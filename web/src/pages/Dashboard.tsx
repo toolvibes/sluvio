@@ -5,10 +5,15 @@ import { useT, type Key } from "../i18n";
 import { useApp } from "../state";
 import { services, serverState } from "../derive";
 import { Badge, Empty, Icon, Spinner, StatusBadge } from "../components/ui";
+import { fmtCompact, fmtRate, rowKey, sumRateSeries, trafficCounter } from "../stats";
 
 export default function Dashboard() {
-  const { t, fmtTime } = useT();
-  const { config, status, system } = useApp();
+  const { t, fmtTime, lang } = useT();
+  const { config, status, system, samples } = useApp();
+  const reqRate = useMemo(() => {
+    const keys = (status?.stats ?? []).filter((s) => s.type === "frontend").map(rowKey);
+    return sumRateSeries(samples.slice(-2), keys, trafficCounter)[0]?.v ?? null;
+  }, [samples, status]);
   const [recent, setRecent] = useState<HistoryEntry[] | null>(null);
   useEffect(() => {
     api
@@ -72,11 +77,13 @@ export default function Dashboard() {
           <div className="tile-value">{live ? status?.info?.version.split("-")[0] : "–"}</div>
           <div className="tile-sub muted">{live ? t("dash.uptime", { v: status?.info?.uptime ?? "" }) : t("app.noLiveStatus")}</div>
         </div>
-        <div className="tile">
-          <div className="tile-label">{t("dash.connections")}</div>
-          <div className="tile-value">{live ? status?.info?.currConns : "–"}</div>
-          <div className="tile-sub muted">{live ? t("dash.maxconn", { v: status?.info?.maxConn ?? "" }) : ""}</div>
-        </div>
+        <Link to="/stats" className="tile tile-link">
+          <div className="tile-label">{t("dash.requests")}</div>
+          <div className="tile-value">{live ? fmtRate(reqRate, lang) : "–"}</div>
+          <div className="tile-sub muted">
+            {live ? t("dash.requestsSub", { n: fmtCompact(status?.info?.cumReq, lang), c: status?.info?.currConns ?? "0" }) : t("app.noLiveStatus")}
+          </div>
+        </Link>
         <div className="tile">
           <div className="tile-label">{t("dash.services")}</div>
           <div className="tile-value">{active.length}</div>

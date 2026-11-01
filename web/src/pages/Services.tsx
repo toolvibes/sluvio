@@ -6,6 +6,7 @@ import { useApp } from "../state";
 import { services, type ServiceView, type RouteRef } from "../derive";
 import { Badge, Empty, Icon, Spinner, StatusBadge, Switch, useToast } from "../components/ui";
 import { useReview } from "../components/review";
+import { fmtCompact, fmtInt } from "../stats";
 import { BackendDialog, DisableServiceDialog, RouteDialog, SectionDialog, ServerDialog } from "../components/dialogs";
 
 type Filter = "all" | "active" | "disabled" | "problems";
@@ -262,6 +263,11 @@ function ServiceCard({
           <button type="button" className="btn btn-sm" onClick={() => onDialog({ kind: "section", backend: b })}>
             <Icon name="code" size={14} /> {t("backend.raw")}
           </button>
+          {b.enabled && (
+            <Link to={`/stats?q=${encodeURIComponent(b.name)}`} className="btn btn-sm">
+              <Icon name="stats" size={14} /> {t("services.stats")}
+            </Link>
+          )}
           <span className="spacer" />
           <button
             type="button"
@@ -287,7 +293,7 @@ function routeText(r: RouteRef): string {
 }
 
 function ServerRow({ b, srv, stat, live }: { b: Backend; srv: Server; stat?: Stat; live: boolean }) {
-  const { t, errorText } = useT();
+  const { t, errorText, lang } = useT();
   const { readOnly, refreshStatus } = useApp();
   const review = useReview();
   const toast = useToast();
@@ -351,7 +357,16 @@ function ServerRow({ b, srv, stat, live }: { b: Backend; srv: Server; stat?: Sta
           <span className="muted">{t("server.noCheck")}</span>
         )}
       </td>
-      <td className="hide-sm num">{stat ? stat.sessions : "–"}</td>
+      <td className="hide-sm num" title={t("stats.col.sessionsHint")}>
+        {stat ? (
+          <>
+            {fmtInt(stat.sessions, lang)}
+            <span className="muted"> · {fmtCompact(stat.total, lang)}</span>
+          </>
+        ) : (
+          "–"
+        )}
+      </td>
       <td>
         <div className="row-actions">
           {b.enabled && (

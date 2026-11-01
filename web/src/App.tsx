@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Services from "./pages/Services";
 import ServiceWizard from "./pages/ServiceWizard";
 import Routing from "./pages/Routing";
+import Stats from "./pages/Stats";
 import Editor from "./pages/Editor";
 import History from "./pages/History";
 import Setup from "./pages/Setup";
@@ -22,6 +23,7 @@ const router = createBrowserRouter([
       { index: true, element: <Dashboard /> },
       { path: "services", element: <Services /> },
       { path: "services/new", element: <ServiceWizard /> },
+      { path: "stats", element: <Stats /> },
       { path: "routing", element: <Routing /> },
       { path: "config", element: <Editor /> },
       { path: "history", element: <History /> },
@@ -92,6 +94,7 @@ function AuthGate() {
 const nav = [
   { to: "/", icon: "dashboard", key: "nav.dashboard", end: true },
   { to: "/services", icon: "services", key: "nav.services" },
+  { to: "/stats", icon: "stats", key: "nav.stats" },
   { to: "/routing", icon: "routing", key: "nav.routing" },
   { to: "/config", icon: "editor", key: "nav.config" },
   { to: "/history", icon: "history", key: "nav.history" },

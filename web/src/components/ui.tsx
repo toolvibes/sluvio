@@ -25,6 +25,7 @@ const paths: Record<string, ReactNode> = {
     </>
   ),
   routing: <path d="M4 6h6l4 6-4 6H4M14 12h6M17 9l3 3-3 3" />,
+  stats: <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />,
   editor: <path d="M8 6l-6 6 6 6M16 6l6 6-6 6M13 4l-2 16" />,
   history: (
     <>

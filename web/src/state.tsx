@@ -1,8 +1,22 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { api, type ConfigResponse, type Me, type Status, type SystemInfo } from "./api";
 
+/** A status snapshot with the time it was taken (ms). */
+export interface Sample {
+  t: number;
+  status: Status;
+}
+
+/** How many samples are kept (at 2 s that is 6 minutes). */
+const MAX_SAMPLES = 180;
+
 interface AppState {
   me: Me;
+  /** Recent live status snapshots, oldest first. */
+  samples: Sample[];
+  /** Polling interval of the live status in ms; 0 pauses polling. */
+  pollMs: number;
+  setPollMs: (ms: number) => void;
   config: ConfigResponse | null;
   configError: unknown;
   status: Status | null;
@@ -22,6 +36,8 @@ export function AppProvider({ me, onLogout, children }: { me: Me; onLogout: () =
   const [configError, setConfigError] = useState<unknown>(null);
   const [status, setStatus] = useState<Status | null>(null);
   const [system, setSystem] = useState<SystemInfo | null>(null);
+  const [samples, setSamples] = useState<Sample[]>([]);
+  const [pollMs, setPollMs] = useState(5000);
   const alive = useRef(true);
 
   const refreshConfig = useCallback(async () => {
@@ -38,7 +54,22 @@ export function AppProvider({ me, onLogout, children }: { me: Me; onLogout: () =
   const refreshStatus = useCallback(async () => {
     try {
       const s = await api.status();
-      if (alive.current) setStatus(s);
+      if (alive.current) {
+        setStatus(s);
+        if (s.available) {
+          const now = Date.now();
+          setSamples((prev) => {
+            // Drop the history when HAProxy was reloaded: counters restart at 0.
+            const last = prev[prev.length - 1];
+            const reset = last && (last.status.info?.pid !== s.info?.pid || (s.info?.uptimeSec ?? 0) < (last.status.info?.uptimeSec ?? 0));
+            const base = reset ? [] : prev;
+            // Samples closer than a second apart (e.g. two refreshes on page
+            // load) give meaningless rates: replace the previous one instead.
+            if (!reset && last && now - last.t < 1000) return [...base.slice(0, -1), { t: now, status: s }];
+            return [...base.slice(-(MAX_SAMPLES - 1)), { t: now, status: s }];
+          });
+        }
+      }
     } catch (e) {
       if (alive.current) setStatus({ available: false, error: String((e as Error).message ?? e), stats: [] });
     }
@@ -63,13 +94,13 @@ export function AppProvider({ me, onLogout, children }: { me: Me; onLogout: () =
     };
   }, [refreshAll]);
 
-  // Poll live status every 5 s while the tab is visible.
+  // Poll live status while the tab is visible (default every 5 s).
   useEffect(() => {
     let timer: number | undefined;
     const tick = () => {
       if (document.visibilityState === "visible") void refreshStatus();
     };
-    timer = window.setInterval(tick, 5000);
+    if (pollMs > 0) timer = window.setInterval(tick, pollMs);
     const onVis = () => {
       if (document.visibilityState === "visible") {
         void refreshStatus();
@@ -81,7 +112,7 @@ export function AppProvider({ me, onLogout, children }: { me: Me; onLogout: () =
       window.clearInterval(timer);
       document.removeEventListener("visibilitychange", onVis);
     };
-  }, [refreshStatus, refreshConfig]);
+  }, [refreshStatus, refreshConfig, pollMs]);
 
   const logout = useCallback(async () => {
     try {
@@ -94,7 +125,7 @@ export function AppProvider({ me, onLogout, children }: { me: Me; onLogout: () =
   const readOnly = me.readOnly || !!config?.readOnly;
   return (
     <Ctx.Provider
-      value={{ me, config, configError, status, system, readOnly, refreshConfig, refreshStatus, refreshSystem, refreshAll, logout }}
+      value={{ me, samples, pollMs, setPollMs, config, configError, status, system, readOnly, refreshConfig, refreshStatus, refreshSystem, refreshAll, logout }}
     >
       {children}
     </Ctx.Provider>
