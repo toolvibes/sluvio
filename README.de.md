@@ -11,6 +11,8 @@
 
 ---
 
+<p align="center"><img src="docs/screenshots/de/services.png" alt="Services-Seite: Backends mit Routen, Servern, Live-Status und Wartungs-Schaltern" width="90%" /></p>
+
 Mit SluiceOps fügst du Services hinzu, schaltest Routen und Server ein und aus, siehst den Live-Status und bearbeitest die Konfiguration eines bestehenden HAProxy im Browser. SluiceOps ist freie Software (AGPL-3.0), ohne Bezahlstufe und ohne gesperrte Funktionen.
 
 > [!WARNING]
@@ -47,6 +49,29 @@ SluiceOps arbeitet anders:
 - Einrichtungsprüfung (Schreibrechte, Validator, Runtime-Socket, Reload, Versionsabgleich)
 - Oberfläche auf Deutsch und Englisch, helles und dunkles Design
 - Ein einzelnes Binary oder Docker-Image, keine Datenbank
+
+## Screenshots
+
+**Prüfung vor jeder Änderung – hier: Aktivieren eines vorbereiteten, auskommentierten Services**
+
+<img src="docs/screenshots/de/review.png" alt="Prüf-Dialog mit Diff, Validierung durch haproxy -c und Reload-Hinweis" width="100%" />
+
+**Live-Statistik**
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/de/statistics-dark.png" />
+  <img src="docs/screenshots/de/statistics.png" alt="Statistik-Seite mit Anfragen pro Sekunde, 5xx-Quote, Datenrate und Tabellen je Frontend" width="100%" />
+</picture>
+
+**Übersicht**
+
+<img src="docs/screenshots/de/dashboard.png" alt="Übersicht mit HAProxy-Version, Anfragen pro Sekunde, Services, Servern und letzten Änderungen" width="100%" />
+
+<details>
+<summary><b>Assistent für neue Services</b></summary>
+
+<img src="docs/screenshots/de/wizard.png" alt="Assistent für einen neuen Service mit Host, Servern und Healthcheck" width="100%" />
+</details>
 
 ## Schnellstart mit Docker Compose
 
