@@ -1,0 +1,66 @@
+# SluiceOps next to an existing HAProxy (Docker Compose).
+#
+# Layout on the host:
+#
+#   ./haproxy/haproxy.cfg      your existing configuration (directory mount!)
+#
+# Compared to a typical HAProxy compose file there are three changes:
+#
+#   1. Mount the config DIRECTORY instead of the single file and without ":ro".
+#      SluiceOps writes the file in place; HAProxy itself only reads it.
+#   2. Start HAProxy with a master socket (-S). Through it SluiceOps reads the
+#      live status, switches servers to maintenance/drain without a reload and
+#      triggers graceful reloads. No access to the Docker socket is needed.
+#   3. Share the socket directory between both containers (haproxy-run).
+#
+# Both containers run as uid 99 (user "haproxy" of the official image). Give
+# that user write access to the config directory once:
+#
+#   sudo chown -R 99:99 ./haproxy
+#
+# Use the same HAProxy version for SluiceOps' validator as for HAProxy itself
+# (image tag "haproxy2.9" below), otherwise "haproxy -c" may judge differently.
+
+services:
+  haproxy:
+    image: haproxy:2.9-alpine
+    container_name: haproxy
+    restart: unless-stopped
+    command: ["haproxy", "-W", "-db", "-f", "/usr/local/etc/haproxy/haproxy.cfg", "-S", "/var/lib/haproxy/master.sock"]
+    volumes:
+      - ./haproxy:/usr/local/etc/haproxy
+      - haproxy-run:/var/lib/haproxy
+    ports:
+      - "80:80"
+      - "8081:8081"
+      - "8404:8404"
+    healthcheck:
+      test: ["CMD", "haproxy", "-c", "-f", "/usr/local/etc/haproxy/haproxy.cfg"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  sluiceops:
+    image: ghcr.io/toolvibes/sluiceops:haproxy2.9
+    container_name: sluiceops
+    restart: unless-stopped
+    depends_on:
+      - haproxy
+    environment:
+      SLUICEOPS_CONFIG: /usr/local/etc/haproxy/haproxy.cfg
+      SLUICEOPS_MASTER_SOCKET: /var/lib/haproxy/master.sock
+      # Initial admin password (min. 8 characters). Without it a random
+      # password is generated and printed once in the container log.
+      SLUICEOPS_ADMIN_PASSWORD: ${SLUICEOPS_ADMIN_PASSWORD:?set SLUICEOPS_ADMIN_PASSWORD in .env}
+    volumes:
+      - ./haproxy:/usr/local/etc/haproxy
+      - haproxy-run:/var/lib/haproxy
+      - sluiceops-data:/var/lib/sluiceops
+    ports:
+      # Keep the UI in your LAN / behind your reverse proxy. Whoever can use it
+      # controls all traffic of this HAProxy.
+      - "127.0.0.1:8484:8484"
+
+volumes:
+  haproxy-run:
+  sluiceops-data:

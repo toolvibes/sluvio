@@ -1,0 +1,8 @@
+/sluiceops
+/dist/
+*.test
+*.out
+.DS_Store
+.idea/
+.vscode/
+/.data/
