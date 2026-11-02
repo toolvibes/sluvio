@@ -16,23 +16,23 @@ const composeSnippet = `services:
     ports:
       - "80:80"
 
-  sluiceops:
-    image: ghcr.io/toolvibes/sluiceops:latest
+  sluvio:
+    image: ghcr.io/toolvibes/sluvio:latest
     restart: unless-stopped
     environment:
-      SLUICEOPS_CONFIG: /usr/local/etc/haproxy/haproxy.cfg
-      SLUICEOPS_MASTER_SOCKET: /var/lib/haproxy/master.sock
-      SLUICEOPS_ADMIN_PASSWORD: \${SLUICEOPS_ADMIN_PASSWORD}
+      SLUVIO_CONFIG: /usr/local/etc/haproxy/haproxy.cfg
+      SLUVIO_MASTER_SOCKET: /var/lib/haproxy/master.sock
+      SLUVIO_ADMIN_PASSWORD: \${SLUVIO_ADMIN_PASSWORD}
     volumes:
       - ./haproxy:/usr/local/etc/haproxy
       - haproxy-run:/var/lib/haproxy
-      - sluiceops-data:/var/lib/sluiceops
+      - sluvio-data:/var/lib/sluvio
     ports:
       - "127.0.0.1:8484:8484"
 
 volumes:
   haproxy-run:
-  sluiceops-data:`;
+  sluvio-data:`;
 
 const socketSnippet = `global
     stats socket /var/lib/haproxy/admin.sock mode 660 level admin`;

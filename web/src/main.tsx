@@ -6,7 +6,7 @@ import "./styles.css";
 
 // Apply a stored theme before the first paint.
 try {
-  const theme = localStorage.getItem("sluiceops.theme");
+  const theme = localStorage.getItem("sluvio.theme");
   if (theme === "light" || theme === "dark") document.documentElement.setAttribute("data-theme", theme);
 } catch {
   /* storage unavailable */

@@ -56,7 +56,7 @@ jobs:
       - name: Tags
         id: tags
         run: |
-          img=ghcr.io/${{ github.repository_owner }}/sluiceops
+          img=ghcr.io/${{ github.repository_owner }}/sluvio
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             v=${GITHUB_REF#refs/tags/v}
             tags="$img:haproxy${{ matrix.haproxy }},$img:$v-haproxy${{ matrix.haproxy }}"

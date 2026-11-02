@@ -1,4 +1,4 @@
-# SluiceOps next to an existing HAProxy (Docker Compose).
+# Sluvio next to an existing HAProxy (Docker Compose).
 #
 # Layout on the host:
 #
@@ -7,8 +7,8 @@
 # Compared to a typical HAProxy compose file there are three changes:
 #
 #   1. Mount the config DIRECTORY instead of the single file and without ":ro".
-#      SluiceOps writes the file in place; HAProxy itself only reads it.
-#   2. Start HAProxy with a master socket (-S). Through it SluiceOps reads the
+#      Sluvio writes the file in place; HAProxy itself only reads it.
+#   2. Start HAProxy with a master socket (-S). Through it Sluvio reads the
 #      live status, switches servers to maintenance/drain without a reload and
 #      triggers graceful reloads. No access to the Docker socket is needed.
 #   3. Share the socket directory between both containers (haproxy-run).
@@ -18,7 +18,7 @@
 #
 #   sudo chown -R 99:99 ./haproxy
 #
-# Use the same HAProxy version for SluiceOps' validator as for HAProxy itself
+# Use the same HAProxy version for Sluvio's validator as for HAProxy itself
 # (image tag "haproxy2.9" below), otherwise "haproxy -c" may judge differently.
 
 services:
@@ -40,22 +40,22 @@ services:
       timeout: 5s
       retries: 3
 
-  sluiceops:
-    image: ghcr.io/toolvibes/sluiceops:haproxy2.9
-    container_name: sluiceops
+  sluvio:
+    image: ghcr.io/toolvibes/sluvio:haproxy2.9
+    container_name: sluvio
     restart: unless-stopped
     depends_on:
       - haproxy
     environment:
-      SLUICEOPS_CONFIG: /usr/local/etc/haproxy/haproxy.cfg
-      SLUICEOPS_MASTER_SOCKET: /var/lib/haproxy/master.sock
+      SLUVIO_CONFIG: /usr/local/etc/haproxy/haproxy.cfg
+      SLUVIO_MASTER_SOCKET: /var/lib/haproxy/master.sock
       # Initial admin password (min. 8 characters). Without it a random
       # password is generated and printed once in the container log.
-      SLUICEOPS_ADMIN_PASSWORD: ${SLUICEOPS_ADMIN_PASSWORD:?set SLUICEOPS_ADMIN_PASSWORD in .env}
+      SLUVIO_ADMIN_PASSWORD: ${SLUVIO_ADMIN_PASSWORD:?set SLUVIO_ADMIN_PASSWORD in .env}
     volumes:
       - ./haproxy:/usr/local/etc/haproxy
       - haproxy-run:/var/lib/haproxy
-      - sluiceops-data:/var/lib/sluiceops
+      - sluvio-data:/var/lib/sluvio
     ports:
       # Keep the UI in your LAN / behind your reverse proxy. Whoever can use it
       # controls all traffic of this HAProxy.
@@ -63,4 +63,4 @@ services:
 
 volumes:
   haproxy-run:
-  sluiceops-data:
+  sluvio-data:

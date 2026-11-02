@@ -13,10 +13,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/toolvibes/sluiceops/internal/cfgfile"
-	"github.com/toolvibes/sluiceops/internal/diff"
-	"github.com/toolvibes/sluiceops/internal/haproxy"
-	"github.com/toolvibes/sluiceops/internal/history"
+	"github.com/toolvibes/sluvio/internal/cfgfile"
+	"github.com/toolvibes/sluvio/internal/diff"
+	"github.com/toolvibes/sluvio/internal/haproxy"
+	"github.com/toolvibes/sluvio/internal/history"
 )
 
 // App is the central service.
@@ -33,7 +33,7 @@ type App struct {
 var ErrConflict = errors.New("the configuration was changed in the meantime; reload and try again")
 
 // ErrReadOnly is returned for writes in read-only mode.
-var ErrReadOnly = errors.New("SluiceOps runs in read-only mode")
+var ErrReadOnly = errors.New("Sluvio runs in read-only mode")
 
 // Snapshot is the current state of the configuration file.
 type Snapshot struct {
@@ -44,7 +44,7 @@ type Snapshot struct {
 	ModTime time.Time         `json:"modTime"`
 }
 
-// Load reads the configuration file. If it was changed outside SluiceOps since
+// Load reads the configuration file. If it was changed outside Sluvio since
 // the last stored version, the new content is recorded in the history.
 func (a *App) Load() (*Snapshot, error) {
 	b, err := os.ReadFile(a.ConfigPath)
@@ -77,7 +77,7 @@ func (a *App) recordExternal(content string) {
 	}
 	_, prev, _ := a.History.Get(latest.ID)
 	d := diff.Compute(prev, content, 0)
-	_, _ = a.History.Save(content, history.Entry{Kind: "external", Message: "changed outside SluiceOps", Added: d.Added, Removed: d.Removed})
+	_, _ = a.History.Save(content, history.Entry{Kind: "external", Message: "changed outside Sluvio", Added: d.Added, Removed: d.Removed})
 }
 
 // ChangeRequest is a list of operations based on a known version.

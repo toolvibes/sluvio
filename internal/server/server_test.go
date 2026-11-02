@@ -9,9 +9,9 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/toolvibes/sluiceops/internal/app"
-	"github.com/toolvibes/sluiceops/internal/haproxy"
-	"github.com/toolvibes/sluiceops/internal/history"
+	"github.com/toolvibes/sluvio/internal/app"
+	"github.com/toolvibes/sluvio/internal/haproxy"
+	"github.com/toolvibes/sluvio/internal/history"
 )
 
 func newTestServer(t *testing.T) (*httptest.Server, string) {
@@ -33,7 +33,7 @@ func do(t *testing.T, c *http.Client, method, url, body string, csrf bool) *http
 	t.Helper()
 	req, _ := http.NewRequest(method, url, strings.NewReader(body))
 	if csrf {
-		req.Header.Set("X-SluiceOps", "1")
+		req.Header.Set("X-Sluvio", "1")
 	}
 	res, err := c.Do(req)
 	if err != nil {

@@ -146,7 +146,7 @@ export type ThemePref = "system" | "light" | "dark";
 export function useTheme(): [ThemePref, (t: ThemePref) => void] {
   const [pref, setPref] = useState<ThemePref>(() => {
     try {
-      const v = localStorage.getItem("sluiceops.theme");
+      const v = localStorage.getItem("sluvio.theme");
       if (v === "light" || v === "dark") return v;
     } catch {
       /* ignore */
@@ -158,8 +158,8 @@ export function useTheme(): [ThemePref, (t: ThemePref) => void] {
     if (pref === "system") root.removeAttribute("data-theme");
     else root.setAttribute("data-theme", pref);
     try {
-      if (pref === "system") localStorage.removeItem("sluiceops.theme");
-      else localStorage.setItem("sluiceops.theme", pref);
+      if (pref === "system") localStorage.removeItem("sluvio.theme");
+      else localStorage.setItem("sluvio.theme", pref);
     } catch {
       /* ignore */
     }

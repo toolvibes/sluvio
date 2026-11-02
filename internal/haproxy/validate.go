@@ -48,10 +48,10 @@ func (v *Validator) Check(ctx context.Context, content string) Validation {
 		return Validation{Valid: true, Skipped: true, Messages: []Message{}, Output: "validation disabled"}
 	}
 	dir := filepath.Dir(v.ConfigPath)
-	tmp, err := os.CreateTemp(dir, ".sluiceops-check-*.cfg")
+	tmp, err := os.CreateTemp(dir, ".sluvio-check-*.cfg")
 	if err != nil {
 		// Fall back to the system temp dir if the config dir is read-only.
-		tmp, err = os.CreateTemp("", "sluiceops-check-*.cfg")
+		tmp, err = os.CreateTemp("", "sluvio-check-*.cfg")
 		if err != nil {
 			return Validation{Valid: false, Output: err.Error(), Messages: []Message{{Level: "alert", Message: err.Error()}}}
 		}

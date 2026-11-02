@@ -27,7 +27,7 @@ export default function Login({ onLoggedIn }: { onLoggedIn: () => void }) {
         <div className="login-brand">
           <Logo size={40} />
           <div>
-            <h1>SluiceOps</h1>
+            <h1>Sluvio</h1>
             <p className="muted">{t("login.tagline")}</p>
           </div>
         </div>

@@ -63,8 +63,8 @@ function AuthGate() {
   useEffect(() => {
     void check();
     const onUnauthorized = () => setState((s) => (s === "ready" ? "login" : s));
-    window.addEventListener("sluiceops:unauthorized", onUnauthorized);
-    return () => window.removeEventListener("sluiceops:unauthorized", onUnauthorized);
+    window.addEventListener("sluvio:unauthorized", onUnauthorized);
+    return () => window.removeEventListener("sluvio:unauthorized", onUnauthorized);
   }, [check]);
   if (state === "loading")
     return (
@@ -126,7 +126,7 @@ function Shell() {
         </button>
         <NavLink to="/" className="brand">
           <Logo />
-          <span>SluiceOps</span>
+          <span>Sluvio</span>
         </NavLink>
         <StatusPill />
         <div className="topbar-spacer" />

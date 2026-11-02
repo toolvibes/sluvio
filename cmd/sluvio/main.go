@@ -1,4 +1,4 @@
-// SluiceOps is a web UI to manage HAProxy configurations without losing the
+// Sluvio is a web UI to manage HAProxy configurations without losing the
 // structure, comments and order of hand written files.
 package main
 
@@ -19,11 +19,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/toolvibes/sluiceops/internal/app"
-	"github.com/toolvibes/sluiceops/internal/haproxy"
-	"github.com/toolvibes/sluiceops/internal/history"
-	"github.com/toolvibes/sluiceops/internal/server"
-	"github.com/toolvibes/sluiceops/web"
+	"github.com/toolvibes/sluvio/internal/app"
+	"github.com/toolvibes/sluvio/internal/haproxy"
+	"github.com/toolvibes/sluvio/internal/history"
+	"github.com/toolvibes/sluvio/internal/server"
+	"github.com/toolvibes/sluvio/web"
 )
 
 var version = "dev"
@@ -64,22 +64,22 @@ type options struct {
 
 func main() {
 	var o options
-	flag.StringVar(&o.listen, "listen", env("SLUICEOPS_LISTEN", ":8484"), "address of the web UI")
-	flag.StringVar(&o.configPath, "config", env("SLUICEOPS_CONFIG", "/usr/local/etc/haproxy/haproxy.cfg"), "path of haproxy.cfg")
-	flag.StringVar(&o.haproxyBin, "haproxy-bin", env("SLUICEOPS_HAPROXY_BIN", "haproxy"), "haproxy binary used for validation (\"none\" disables validation)")
-	flag.StringVar(&o.masterSocket, "master-socket", env("SLUICEOPS_MASTER_SOCKET", ""), "HAProxy master CLI socket (haproxy -W -S <path>); enables status and reloads")
-	flag.StringVar(&o.statsSocket, "stats-socket", env("SLUICEOPS_STATS_SOCKET", ""), "HAProxy stats socket with \"level admin\" (alternative to -master-socket)")
-	flag.StringVar(&o.reloadCmd, "reload-cmd", env("SLUICEOPS_RELOAD_CMD", ""), "shell command to reload HAProxy, if no master socket is used")
-	flag.StringVar(&o.dataDir, "data-dir", env("SLUICEOPS_DATA_DIR", "/var/lib/sluiceops"), "directory for history and users")
-	flag.IntVar(&o.keep, "history-keep", envInt("SLUICEOPS_HISTORY_KEEP", 500), "number of config versions to keep (0 = all)")
-	flag.BoolVar(&o.readOnly, "read-only", envBool("SLUICEOPS_READ_ONLY", false), "never write the configuration")
-	flag.StringVar(&o.authMode, "auth", env("SLUICEOPS_AUTH", "password"), "authentication: password or none (only behind an authenticating proxy!)")
-	flag.StringVar(&o.adminUser, "admin-user", env("SLUICEOPS_ADMIN_USER", "admin"), "name of the admin user")
+	flag.StringVar(&o.listen, "listen", env("SLUVIO_LISTEN", ":8484"), "address of the web UI")
+	flag.StringVar(&o.configPath, "config", env("SLUVIO_CONFIG", "/usr/local/etc/haproxy/haproxy.cfg"), "path of haproxy.cfg")
+	flag.StringVar(&o.haproxyBin, "haproxy-bin", env("SLUVIO_HAPROXY_BIN", "haproxy"), "haproxy binary used for validation (\"none\" disables validation)")
+	flag.StringVar(&o.masterSocket, "master-socket", env("SLUVIO_MASTER_SOCKET", ""), "HAProxy master CLI socket (haproxy -W -S <path>); enables status and reloads")
+	flag.StringVar(&o.statsSocket, "stats-socket", env("SLUVIO_STATS_SOCKET", ""), "HAProxy stats socket with \"level admin\" (alternative to -master-socket)")
+	flag.StringVar(&o.reloadCmd, "reload-cmd", env("SLUVIO_RELOAD_CMD", ""), "shell command to reload HAProxy, if no master socket is used")
+	flag.StringVar(&o.dataDir, "data-dir", env("SLUVIO_DATA_DIR", "/var/lib/sluvio"), "directory for history and users")
+	flag.IntVar(&o.keep, "history-keep", envInt("SLUVIO_HISTORY_KEEP", 500), "number of config versions to keep (0 = all)")
+	flag.BoolVar(&o.readOnly, "read-only", envBool("SLUVIO_READ_ONLY", false), "never write the configuration")
+	flag.StringVar(&o.authMode, "auth", env("SLUVIO_AUTH", "password"), "authentication: password or none (only behind an authenticating proxy!)")
+	flag.StringVar(&o.adminUser, "admin-user", env("SLUVIO_ADMIN_USER", "admin"), "name of the admin user")
 	flag.DurationVar(&o.sessionTTL, "session-ttl", 12*time.Hour, "idle time after which a session expires")
 	showVersion := flag.Bool("version", false, "print version and exit")
 	flag.Parse()
 	if *showVersion {
-		fmt.Println("sluiceops", version)
+		fmt.Println("sluvio", version)
 		return
 	}
 	server.Version = version
@@ -124,7 +124,7 @@ func run(log *slog.Logger, o options) error {
 	if _, err := a.Load(); err != nil {
 		return err
 	}
-	auth, generated, err := server.NewAuth(o.dataDir, o.adminUser, os.Getenv("SLUICEOPS_ADMIN_PASSWORD"), o.sessionTTL)
+	auth, generated, err := server.NewAuth(o.dataDir, o.adminUser, os.Getenv("SLUVIO_ADMIN_PASSWORD"), o.sessionTTL)
 	if err != nil {
 		return fmt.Errorf("auth: %w", err)
 	}
@@ -132,12 +132,12 @@ func run(log *slog.Logger, o options) error {
 	case "password":
 	case "none":
 		auth.Disabled = true
-		log.Warn("authentication disabled – only run SluiceOps like this behind an authenticating proxy")
+		log.Warn("authentication disabled – only run Sluvio like this behind an authenticating proxy")
 	default:
 		return fmt.Errorf("unknown -auth %q", o.authMode)
 	}
 	if generated != "" {
-		log.Warn("created admin user with a generated password – set SLUICEOPS_ADMIN_PASSWORD to choose your own", "user", o.adminUser, "password", generated)
+		log.Warn("created admin user with a generated password – set SLUVIO_ADMIN_PASSWORD to choose your own", "user", o.adminUser, "password", generated)
 	}
 	if !rt.Available() {
 		log.Warn("no runtime socket configured: live status and server toggles without reload are unavailable")
@@ -170,7 +170,7 @@ func run(log *slog.Logger, o options) error {
 		defer cancel()
 		_ = hs.Shutdown(sctx)
 	}()
-	log.Info("SluiceOps started", "version", version, "listen", o.listen, "config", o.configPath, "readOnly", o.readOnly)
+	log.Info("Sluvio started", "version", version, "listen", o.listen, "config", o.configPath, "readOnly", o.readOnly)
 	if err := hs.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}

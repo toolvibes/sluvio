@@ -1,4 +1,4 @@
-# Contributing to SluiceOps
+# Contributing to Sluvio
 
 Thanks for helping! Issues and pull requests in German or English are welcome.
 

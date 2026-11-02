@@ -21,7 +21,7 @@ const Ctx = createContext<I18n | null>(null);
 
 function initialLang(): Lang {
   try {
-    const s = localStorage.getItem("sluiceops.lang");
+    const s = localStorage.getItem("sluvio.lang");
     if (s === "de" || s === "en") return s;
   } catch {
     /* storage unavailable */
@@ -42,7 +42,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const setLang = useCallback((l: Lang) => {
     setLangState(l);
     try {
-      localStorage.setItem("sluiceops.lang", l);
+      localStorage.setItem("sluvio.lang", l);
     } catch {
       /* ignore */
     }

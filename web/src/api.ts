@@ -1,4 +1,4 @@
-// Typed client for the SluiceOps HTTP API.
+// Typed client for the Sluvio HTTP API.
 
 export interface Bind {
   line: number;
@@ -367,7 +367,7 @@ export class ApiError extends Error {
 async function request<T>(method: string, url: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = { Accept: "application/json" };
   if (method !== "GET") {
-    headers["X-SluiceOps"] = "1";
+    headers["X-Sluvio"] = "1";
     headers["Content-Type"] = "application/json";
   }
   let res: Response;
@@ -392,7 +392,7 @@ async function request<T>(method: string, url: string, body?: unknown): Promise<
   }
   if (!res.ok) {
     const err = (data as { error?: ApiErrorBody } | null)?.error ?? { code: "internal", message: text || res.statusText };
-    if (res.status === 401) window.dispatchEvent(new Event("sluiceops:unauthorized"));
+    if (res.status === 401) window.dispatchEvent(new Event("sluvio:unauthorized"));
     throw new ApiError(res.status, err);
   }
   return data as T;

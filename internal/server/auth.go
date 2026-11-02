@@ -19,7 +19,7 @@ import (
 
 // dummyHash is compared against for unknown users so that a login attempt
 // always costs one bcrypt comparison.
-var dummyHash, _ = bcrypt.GenerateFromPassword([]byte("sluiceops-dummy"), bcrypt.DefaultCost)
+var dummyHash, _ = bcrypt.GenerateFromPassword([]byte("sluvio-dummy"), bcrypt.DefaultCost)
 
 // Auth manages users and sessions.
 type Auth struct {
@@ -37,7 +37,7 @@ type session struct {
 	Expires time.Time
 }
 
-const cookieName = "sluiceops_session"
+const cookieName = "sluvio_session"
 
 // NewAuth loads the user file from dataDir. If adminPassword is set, the admin
 // user is created or its password replaced. If no user exists, a random

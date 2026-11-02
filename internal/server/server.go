@@ -1,4 +1,4 @@
-// Package server exposes SluiceOps over HTTP: a JSON API and the embedded UI.
+// Package server exposes Sluvio over HTTP: a JSON API and the embedded UI.
 package server
 
 import (
@@ -15,10 +15,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/toolvibes/sluiceops/internal/app"
-	"github.com/toolvibes/sluiceops/internal/cfgfile"
-	"github.com/toolvibes/sluiceops/internal/diff"
-	"github.com/toolvibes/sluiceops/internal/haproxy"
+	"github.com/toolvibes/sluvio/internal/app"
+	"github.com/toolvibes/sluvio/internal/cfgfile"
+	"github.com/toolvibes/sluvio/internal/diff"
+	"github.com/toolvibes/sluvio/internal/haproxy"
 )
 
 // Version is set at build time.
@@ -74,8 +74,8 @@ func (s *Server) middleware(next http.Handler) http.Handler {
 		// send custom headers cross-origin without a CORS preflight, which
 		// this server never allows.
 		if strings.HasPrefix(r.URL.Path, "/api/") && r.Method != http.MethodGet && r.Method != http.MethodHead {
-			if r.Header.Get("X-SluiceOps") != "1" {
-				writeErr(w, http.StatusForbidden, "csrf", "missing X-SluiceOps header")
+			if r.Header.Get("X-Sluvio") != "1" {
+				writeErr(w, http.StatusForbidden, "csrf", "missing X-Sluvio header")
 				return
 			}
 		}
@@ -476,7 +476,7 @@ func (s *Server) static() http.Handler {
 		if err != nil {
 			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 			w.WriteHeader(http.StatusOK)
-			io.WriteString(w, "SluiceOps API is running, but the web UI was not built.\nRun: cd web && npm ci && npm run build\n")
+			io.WriteString(w, "Sluvio API is running, but the web UI was not built.\nRun: cd web && npm ci && npm run build\n")
 			return
 		}
 		defer f.Close()

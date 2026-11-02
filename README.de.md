@@ -2,7 +2,7 @@
   <img src="docs/logo.svg" width="72" alt="" />
 </p>
 
-<h1 align="center">SluiceOps</h1>
+<h1 align="center">Sluvio</h1>
 
 <p align="center">
   Eine Web-Oberfläche für HAProxy, die deine <code>haproxy.cfg</code> genau so lässt, wie du sie geschrieben hast.<br/>
@@ -13,26 +13,26 @@
 
 <p align="center"><img src="docs/screenshots/de/services.png" alt="Services-Seite: Backends mit Routen, Servern, Live-Status und Wartungs-Schaltern" width="90%" /></p>
 
-Mit SluiceOps fügst du Services hinzu, schaltest Routen und Server ein und aus, siehst den Live-Status und bearbeitest die Konfiguration eines bestehenden HAProxy im Browser. SluiceOps ist freie Software (AGPL-3.0), ohne Bezahlstufe und ohne gesperrte Funktionen.
+Mit Sluvio fügst du Services hinzu, schaltest Routen und Server ein und aus, siehst den Live-Status und bearbeitest die Konfiguration eines bestehenden HAProxy im Browser. Sluvio ist freie Software (AGPL-3.0), ohne Bezahlstufe und ohne gesperrte Funktionen.
 
 > [!WARNING]
-> **Frühe Version (0.x).** SluiceOps ist neu und bisher nur mit wenigen Setups getestet. Bevor du damit ein produktives HAProxy verwaltest:
+> **Frühe Version (0.x).** Sluvio ist neu und bisher nur mit wenigen Setups getestet. Bevor du damit ein produktives HAProxy verwaltest:
 >
 > - probiere es zuerst mit einer Kopie deiner Konfiguration aus oder starte es mit `-read-only` und sieh dich um,
 > - prüfe vor jeder Änderung den Diff im Prüf-Dialog,
-> - behalte eine eigene Sicherung deiner `haproxy.cfg` (SluiceOps führt zwar einen Verlauf, verlass dich aber nicht allein darauf).
+> - behalte eine eigene Sicherung deiner `haproxy.cfg` (Sluvio führt zwar einen Verlauf, verlass dich aber nicht allein darauf).
 >
-> Fehlerberichte und Rückmeldungen sind sehr willkommen – bitte [ein Issue anlegen](https://github.com/toolvibes/sluiceops/issues).
+> Fehlerberichte und Rückmeldungen sind sehr willkommen – bitte [ein Issue anlegen](https://github.com/toolvibes/sluvio/issues).
 
 ## Warum noch eine HAProxy-UI?
 
 Die meisten Tools lesen die `haproxy.cfg` in ein Datenmodell ein und schreiben eine neu erzeugte Datei zurück. Kommentare wandern an den Anfang ihres Abschnitts oder verschwinden, Abschnitte werden umsortiert, aus `inter 5s` wird `inter 5000`. Für eine von Hand gepflegte und dokumentierte Config ist das nicht akzeptabel.
 
-SluiceOps arbeitet anders:
+Sluvio arbeitet anders:
 
 - **Zeilengenauer Editor.** Jede Änderung fasst nur die Zeilen an, um die es geht. Kommentare, Leerzeilen, Ausrichtung und Reihenfolge bleiben Byte für Byte erhalten. Deaktivierst du etwas und aktivierst es wieder, ist die Datei identisch zum Original.
-- **Deine Config bleibt die maßgebliche Quelle.** Keine Datenbank, kein Import. SluiceOps auf eine vorhandene `haproxy.cfg` zeigen lassen, fertig. Du kannst die Datei weiterhin von Hand bearbeiten; SluiceOps erkennt solche Änderungen und nimmt sie in den Verlauf auf. Ohne SluiceOps bleibt eine ganz normale HAProxy-Config zurück.
-- **„Deaktiviert“ heißt auskommentiert**, so wie man es von Hand macht. SluiceOps erkennt auskommentierte `use_backend`-Regeln, ACLs, Server und ganze `backend`-Blöcke als deaktivierte Konfiguration. Das Aktivieren eines vorbereiteten Services kommentiert ACLs, Regel und Backend-Block in einem Schritt ein.
+- **Deine Config bleibt die maßgebliche Quelle.** Keine Datenbank, kein Import. Sluvio auf eine vorhandene `haproxy.cfg` zeigen lassen, fertig. Du kannst die Datei weiterhin von Hand bearbeiten; Sluvio erkennt solche Änderungen und nimmt sie in den Verlauf auf. Ohne Sluvio bleibt eine ganz normale HAProxy-Config zurück.
+- **„Deaktiviert“ heißt auskommentiert**, so wie man es von Hand macht. Sluvio erkennt auskommentierte `use_backend`-Regeln, ACLs, Server und ganze `backend`-Blöcke als deaktivierte Konfiguration. Das Aktivieren eines vorbereiteten Services kommentiert ACLs, Regel und Backend-Block in einem Schritt ein.
 - **Jede Änderung wird geprüft.** Du siehst zuerst den Diff, `haproxy -c` prüft das Ergebnis, erst dann wird geschrieben und HAProxy unterbrechungsfrei neu geladen. Jede Version bleibt erhalten und kann wiederhergestellt werden.
 - **Live, wo es geht.** Wartung und Drain für Server laufen über die Runtime-API ohne Reload und werden zusätzlich in der Datei gespeichert (`disabled`). Damit übersteht der Zustand auch den nächsten Reload.
 
@@ -45,7 +45,7 @@ SluiceOps arbeitet anders:
 - Server-Verwaltung: hinzufügen, bearbeiten, Wartung, Drain, löschen
 - Backend-Einstellungen: Modus, Balancing, Healthcheck, Timeouts; einzelne Abschnitte als Text bearbeiten
 - Vollständiger Config-Editor mit Validierung und Markierung der Fehlerzeilen
-- Verlauf aller Versionen (auch Änderungen außerhalb von SluiceOps), Diffs, Rollback per Klick
+- Verlauf aller Versionen (auch Änderungen außerhalb von Sluvio), Diffs, Rollback per Klick
 - Einrichtungsprüfung (Schreibrechte, Validator, Runtime-Socket, Reload, Versionsabgleich)
 - Oberfläche auf Deutsch und Englisch, helles und dunkles Design
 - Ein einzelnes Binary oder Docker-Image, keine Datenbank
@@ -87,20 +87,20 @@ services:
       - haproxy-run:/var/lib/haproxy             # gemeinsamer Master-Socket
     ports: ["80:80"]
 
-  sluiceops:
-    image: ghcr.io/toolvibes/sluiceops:haproxy2.9 # gleiche HAProxy-Version wie oben
+  sluvio:
+    image: ghcr.io/toolvibes/sluvio:haproxy2.9 # gleiche HAProxy-Version wie oben
     environment:
-      SLUICEOPS_MASTER_SOCKET: /var/lib/haproxy/master.sock
-      SLUICEOPS_ADMIN_PASSWORD: bitte-aendern
+      SLUVIO_MASTER_SOCKET: /var/lib/haproxy/master.sock
+      SLUVIO_ADMIN_PASSWORD: bitte-aendern
     volumes:
       - ./haproxy:/usr/local/etc/haproxy
       - haproxy-run:/var/lib/haproxy
-      - sluiceops-data:/var/lib/sluiceops
+      - sluvio-data:/var/lib/sluvio
     ports: ["127.0.0.1:8484:8484"]
 
 volumes:
   haproxy-run:
-  sluiceops-data:
+  sluvio-data:
 ```
 
 Beide Container laufen als UID 99 (Benutzer `haproxy` des offiziellen Images). Gib ihm einmalig Schreibrechte auf das Config-Verzeichnis:
@@ -117,23 +117,23 @@ Du hast schon ein laufendes HAProxy-Compose-Setup? Die Anleitung [Umstieg mit Do
 
 | Änderung | Grund |
 |---|---|
-| Verzeichnis statt Datei mounten | Einzelne Datei-Mounts zeigen nach dem Ersetzen einer Datei weiter die alte Version. SluiceOps schreibt zwar direkt in die Datei, aber ein Verzeichnis-Mount funktioniert mit jedem Editor. |
+| Verzeichnis statt Datei mounten | Einzelne Datei-Mounts zeigen nach dem Ersetzen einer Datei weiter die alte Version. Sluvio schreibt zwar direkt in die Datei, aber ein Verzeichnis-Mount funktioniert mit jedem Editor. |
 | `-S /var/lib/haproxy/master.sock` | Über den Master-Socket kommen Live-Status, Wartung und Drain ohne Reload sowie unterbrechungsfreie Reloads. Niemand braucht Zugriff auf den Docker-Socket. |
-| Gleiche HAProxy-Version in beiden Images | Die Validierung läuft mit `haproxy -c` im SluiceOps-Container. Images gibt es pro HAProxy-Version: `haproxy2.8`, `haproxy2.9`, `haproxy3.0`, `haproxy3.2`. |
+| Gleiche HAProxy-Version in beiden Images | Die Validierung läuft mit `haproxy -c` im Sluvio-Container. Images gibt es pro HAProxy-Version: `haproxy2.8`, `haproxy2.9`, `haproxy3.0`, `haproxy3.2`. |
 
 ## Binary direkt starten
 
 ```bash
-sluiceops \
+sluvio \
   -config /etc/haproxy/haproxy.cfg \
   -master-socket /run/haproxy/master.sock \
-  -data-dir /var/lib/sluiceops
+  -data-dir /var/lib/sluvio
 ```
 
 Ohne Master-Socket geht es auch mit einem Stats-Socket (`stats socket /run/haproxy/admin.sock mode 660 level admin` im `global`-Abschnitt) und einem Reload-Befehl:
 
 ```bash
-sluiceops -config /etc/haproxy/haproxy.cfg \
+sluvio -config /etc/haproxy/haproxy.cfg \
   -stats-socket /run/haproxy/admin.sock \
   -reload-cmd "systemctl reload haproxy"
 ```
@@ -150,13 +150,13 @@ Alle Optionen mit den passenden Umgebungsvariablen findest du in der [englischen
 
 ## Sicherheit
 
-Wer SluiceOps bedienen kann, steuert den gesamten Verkehr deines HAProxy. Betreibe es im internen Netz oder hinter deinem Reverse Proxy mit zusätzlicher Zugriffskontrolle, nicht offen im Internet. Sitzungen nutzen `HttpOnly`/`SameSite=Strict`-Cookies, ändernde Anfragen brauchen einen eigenen Header (CSRF-Schutz), fehlgeschlagene Logins werden gebremst. Sicherheitslücken bitte wie in [SECURITY.md](SECURITY.md) beschrieben melden.
+Wer Sluvio bedienen kann, steuert den gesamten Verkehr deines HAProxy. Betreibe es im internen Netz oder hinter deinem Reverse Proxy mit zusätzlicher Zugriffskontrolle, nicht offen im Internet. Sitzungen nutzen `HttpOnly`/`SameSite=Strict`-Cookies, ändernde Anfragen brauchen einen eigenen Header (CSRF-Schutz), fehlgeschlagene Logins werden gebremst. Sicherheitslücken bitte wie in [SECURITY.md](SECURITY.md) beschrieben melden.
 
 ## Grenzen
 
 - Die Formulare decken die häufigen Fälle ab (Services, Server, Host/Pfad-Routing, Healthchecks, Timeouts). Alles andere bleibt unangetastet und lässt sich im Abschnitts- oder Config-Editor bearbeiten.
 - Routen mit komplexen Bedingungen (`||`, Negationen, andere Fetches) werden angezeigt und lassen sich ein- und ausschalten, müssen aber als Text bearbeitet werden.
-- Eine HAProxy-Instanz pro SluiceOps-Instanz. Auf mehrere Dateien verteilte Configs (`-f dir/`) werden noch nicht unterstützt.
+- Eine HAProxy-Instanz pro Sluvio-Instanz. Auf mehrere Dateien verteilte Configs (`-f dir/`) werden noch nicht unterstützt.
 
 ## Mitmachen
 
@@ -164,6 +164,6 @@ Beiträge sind willkommen, siehe [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Lizenz
 
-SluiceOps steht unter der [GNU Affero General Public License v3.0](LICENSE). Du darfst es nutzen, verändern und weitergeben. Wer eine veränderte Version anderen über ein Netzwerk anbietet, muss ihnen auch den Quellcode zur Verfügung stellen.
+Sluvio steht unter der [GNU Affero General Public License v3.0](LICENSE). Du darfst es nutzen, verändern und weitergeben. Wer eine veränderte Version anderen über ein Netzwerk anbietet, muss ihnen auch den Quellcode zur Verfügung stellen.
 
-HAProxy ist eine Marke der HAProxy Technologies LLC. SluiceOps ist ein unabhängiges Projekt und steht in keiner Verbindung zu HAProxy Technologies.
+HAProxy ist eine Marke der HAProxy Technologies LLC. Sluvio ist ein unabhängiges Projekt und steht in keiner Verbindung zu HAProxy Technologies.

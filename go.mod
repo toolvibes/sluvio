@@ -1,4 +1,4 @@
-module github.com/toolvibes/sluiceops
+module github.com/toolvibes/sluvio
 
 go 1.26.0
 

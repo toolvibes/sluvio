@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/toolvibes/sluiceops/internal/diff"
+	"github.com/toolvibes/sluvio/internal/diff"
 )
 
 func ptr[T any](v T) *T { return &v }

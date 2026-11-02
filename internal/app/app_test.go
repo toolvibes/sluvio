@@ -12,9 +12,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/toolvibes/sluiceops/internal/cfgfile"
-	"github.com/toolvibes/sluiceops/internal/haproxy"
-	"github.com/toolvibes/sluiceops/internal/history"
+	"github.com/toolvibes/sluvio/internal/cfgfile"
+	"github.com/toolvibes/sluvio/internal/haproxy"
+	"github.com/toolvibes/sluvio/internal/history"
 )
 
 func freePort(t *testing.T) int {
@@ -73,6 +73,14 @@ backend be-a
 	t.Cleanup(func() { _ = cmd.Process.Kill(); _ = cmd.Wait() })
 	for i := 0; i < 50; i++ {
 		if _, err := os.Stat(sock); err == nil {
+			break
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+	// The socket file appears before HAProxy accepts connections on it.
+	probe := &haproxy.Runtime{MasterSocket: sock, Timeout: time.Second}
+	for i := 0; i < 50; i++ {
+		if _, err := probe.ShowInfo(); err == nil {
 			break
 		}
 		time.Sleep(100 * time.Millisecond)
