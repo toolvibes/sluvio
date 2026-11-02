@@ -121,6 +121,21 @@ Du hast schon ein laufendes HAProxy-Compose-Setup? Die Anleitung [Umstieg mit Do
 | `-S /var/lib/haproxy/master.sock` | Über den Master-Socket kommen Live-Status, Wartung und Drain ohne Reload sowie unterbrechungsfreie Reloads. Niemand braucht Zugriff auf den Docker-Socket. |
 | Gleiche HAProxy-Version in beiden Images | Die Validierung läuft mit `haproxy -c` im Sluvio-Container. Images gibt es pro HAProxy-Version: `haproxy2.8`, `haproxy2.9`, `haproxy3.0`, `haproxy3.2`. |
 
+## Lokal ausprobieren
+
+Eine vollständige Demo mit HAProxy, ein paar Test-Backends und einer Beispiel-Config liegt in
+[`deploy/demo`](deploy/demo/docker-compose.yml). Sluvio wird dabei aus diesem Repository gebaut:
+
+```bash
+cd deploy/demo
+docker compose up -d --build
+```
+
+Dann http://127.0.0.1:8484 öffnen und als `admin` / `sluvio-demo` anmelden. HAProxy antwortet unter
+http://127.0.0.1:8080 (`curl -H "Host: shop.example.test" 127.0.0.1:8080`), die Statistikseite unter
+http://127.0.0.1:8404/stats. Die Demo-Config liegt in einem Docker-Volume, deine Änderungen fassen also keine Datei im
+Repository an; `docker compose down -v` setzt alles zurück.
+
 ## Binary direkt starten
 
 ```bash

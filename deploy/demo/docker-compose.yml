@@ -1,0 +1,73 @@
+# Local demo: HAProxy + Sluvio built from this repository + small test backends.
+#
+#   cd deploy/demo
+#   docker compose up -d --build
+#
+# Then open http://127.0.0.1:8484 and log in as "admin" / "sluvio-demo".
+# HAProxy itself answers on http://127.0.0.1:8080, its statistics page on
+# http://127.0.0.1:8404/stats. Ports can be changed via environment variables
+# (SLUVIO_PORT, HAPROXY_PORT, STATS_PORT), e.g. in a .env file next to this one.
+#
+# The configuration is copied from ./haproxy.cfg into a Docker volume on the
+# first start, so edits made in Sluvio never touch files in the repository.
+# Start over with:  docker compose down -v
+#
+# Only for trying Sluvio locally: the UI is bound to 127.0.0.1 and the admin
+# password is public. See deploy/docker-compose.example.yml for real setups.
+
+services:
+  # Copies the demo config into the shared volume once and hands it to uid 99
+  # (user "haproxy", which both HAProxy and Sluvio run as).
+  config-init:
+    image: busybox:1.37
+    command: ["sh", "-c", "[ -f /cfg/haproxy.cfg ] || cp /demo/haproxy.cfg /cfg/haproxy.cfg; chown -R 99:99 /cfg"]
+    volumes:
+      - ./haproxy.cfg:/demo/haproxy.cfg:ro
+      - haproxy-config:/cfg
+
+  haproxy:
+    image: haproxy:${HAPROXY_VERSION:-3.2}-alpine
+    command: ["haproxy", "-W", "-db", "-f", "/usr/local/etc/haproxy/haproxy.cfg", "-S", "/var/lib/haproxy/master.sock"]
+    depends_on:
+      config-init:
+        condition: service_completed_successfully
+    volumes:
+      - haproxy-config:/usr/local/etc/haproxy
+      - haproxy-run:/var/lib/haproxy
+    ports:
+      - "127.0.0.1:${HAPROXY_PORT:-8080}:80"
+      - "127.0.0.1:${STATS_PORT:-8404}:8404"
+
+  sluvio:
+    build:
+      context: ../..
+      args:
+        HAPROXY_VERSION: ${HAPROXY_VERSION:-3.2}
+    image: sluvio:demo
+    depends_on:
+      - haproxy
+    environment:
+      SLUVIO_CONFIG: /usr/local/etc/haproxy/haproxy.cfg
+      SLUVIO_MASTER_SOCKET: /var/lib/haproxy/master.sock
+      SLUVIO_ADMIN_PASSWORD: sluvio-demo
+    volumes:
+      - haproxy-config:/usr/local/etc/haproxy
+      - haproxy-run:/var/lib/haproxy
+      - sluvio-data:/var/lib/sluvio
+    ports:
+      - "127.0.0.1:${SLUVIO_PORT:-8484}:8484"
+
+  # Test backends: each answers with its own hostname, so you can see which
+  # server HAProxy picked (curl -H "Host: shop.example.test" 127.0.0.1:8080).
+  # Stop one (docker compose stop shop-2) to watch its health check fail.
+  shop-1: { image: "traefik/whoami:v1.11" }
+  shop-2: { image: "traefik/whoami:v1.11" }
+  api-1: { image: "traefik/whoami:v1.11" }
+  api-2: { image: "traefik/whoami:v1.11" }
+  blog-1: { image: "traefik/whoami:v1.11" }
+  news-1: { image: "traefik/whoami:v1.11" }
+
+volumes:
+  haproxy-config:
+  haproxy-run:
+  sluvio-data:

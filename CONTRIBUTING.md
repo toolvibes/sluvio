@@ -26,6 +26,9 @@ make test
 make run   # read-only demo against testdata/realworld.cfg
 ```
 
+To try changes against a real HAProxy (live status, maintenance, reloads, history), run the demo in
+`deploy/demo`: `docker compose up -d --build` builds Sluvio from your working tree.
+
 `testdata/realworld.cfg` is an anonymised real-world configuration with lots of
 comments and commented-out services. Use it to check that changes keep such
 files intact. Please never commit real host names, IPs or secrets.

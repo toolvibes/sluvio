@@ -119,6 +119,21 @@ Then open http://127.0.0.1:8484 and log in as `admin`. A complete, commented exa
 | `-S /var/lib/haproxy/master.sock` | The master socket provides live status, maintenance/drain without reload and graceful reloads — without giving anything access to the Docker socket. |
 | Same HAProxy version in both images | Validation runs `haproxy -c` inside the Sluvio container. Images are published per HAProxy version: `haproxy2.8`, `haproxy2.9`, `haproxy3.0`, `haproxy3.2`. |
 
+## Try it locally
+
+A complete demo with HAProxy, a few test backends and an example configuration is in
+[`deploy/demo`](deploy/demo/docker-compose.yml). Sluvio is built from this repository:
+
+```bash
+cd deploy/demo
+docker compose up -d --build
+```
+
+Open http://127.0.0.1:8484 and log in as `admin` / `sluvio-demo`. HAProxy answers on
+http://127.0.0.1:8080 (`curl -H "Host: shop.example.test" 127.0.0.1:8080`), its statistics page on
+http://127.0.0.1:8404/stats. The demo config lives in a Docker volume, so your edits never touch the repository;
+`docker compose down -v` starts over.
+
 ## Running the binary
 
 ```bash
@@ -181,6 +196,8 @@ make build   # build the binary with the embedded UI (Go 1.26)
 make test    # unit tests; tests against a real HAProxy run if "haproxy" is installed
 make run     # read-only demo against testdata/realworld.cfg
 ```
+
+For a full setup with HAProxy, live status and reloads use the [demo](#try-it-locally) (`docker compose up -d --build` rebuilds it from your working tree).
 
 For UI development run `npm run dev` in `web/` (proxies `/api` to `127.0.0.1:8484`).
 
