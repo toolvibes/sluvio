@@ -57,15 +57,15 @@ services:
     ports:
       - "127.0.0.1:${SLUVIO_PORT:-8484}:8484"
 
-  # Test backends: each answers with its own hostname, so you can see which
+  # Test backends: each answers with its own name (Hostname: shop-1 …), so you can see which
   # server HAProxy picked (curl -H "Host: shop.example.test" 127.0.0.1:8080).
   # Stop one (docker compose stop shop-2) to watch its health check fail.
-  shop-1: { image: "traefik/whoami:v1.11" }
-  shop-2: { image: "traefik/whoami:v1.11" }
-  api-1: { image: "traefik/whoami:v1.11" }
-  api-2: { image: "traefik/whoami:v1.11" }
-  blog-1: { image: "traefik/whoami:v1.11" }
-  news-1: { image: "traefik/whoami:v1.11" }
+  shop-1: { image: "traefik/whoami:v1.11", hostname: shop-1 }
+  shop-2: { image: "traefik/whoami:v1.11", hostname: shop-2 }
+  api-1: { image: "traefik/whoami:v1.11", hostname: api-1 }
+  api-2: { image: "traefik/whoami:v1.11", hostname: api-2 }
+  blog-1: { image: "traefik/whoami:v1.11", hostname: blog-1 }
+  news-1: { image: "traefik/whoami:v1.11", hostname: news-1 }
 
 volumes:
   haproxy-config:
